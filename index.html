@@ -1790,6 +1790,39 @@
       </div>
     </section>
 
+    <!-- COUPON / SCRATCH CARD -->
+    <div class="divider">· · · ✦ · · ·</div>
+    <section id="coupon-section" class="reveal">
+      <p class="section-tag">hadiah spesial tiap bulan buat kamu</p>
+      <h2 class="section-title">Kupon <em
+          style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--rose)">Cinta Kita</em></h2>
+      <p
+        style="color:var(--soft);font-size:0.95rem;margin-bottom:20px;max-width:600px;margin-inline:auto;line-height:1.6;">
+        Kupon ini adalah hadiah tambahan buat kamu! Kamu bisa claim dan redeem kupon ini <strong>setiap bulannya (tiap
+          di atas tanggal 10)</strong>.<br>
+        Untuk dapetin 1 kupon bulan ini, kamu harus kirim pesan <strong>"I LOVE YOU"</strong> ke aku ya! 👇
+      </p>
+
+      <div class="coupon-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+        <button id="claim-btn" class="intro-btn" onclick="claimCoupon()"
+          style="animation: pulse 2s infinite; opacity:1;">Kirim Pesan & Dapatkan Kupon 💌</button>
+
+        <div id="scratch-area"
+          style="display: none; position: relative; width: min(320px, 90vw); height: 180px; margin: 10px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3); background: #fff;">
+          <div id="voucher-result"
+            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'DM Sans', sans-serif; font-size: 1.1rem; color: #d42b60; font-weight: bold; line-height: 1.5;">
+            <!-- Voucher text goes here -->
+          </div>
+          <canvas id="scratch-canvas"
+            style="position: absolute; inset: 0; z-index: 2; touch-action: none; border-radius: 16px;"></canvas>
+        </div>
+
+        <p id="scratch-hint"
+          style="display: none; font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; color:var(--soft); animation: pulse 2s infinite;">
+          ✦ Gosok Kuponnya ✦</p>
+      </div>
+    </section>
+
     <!-- FOOTER -->
     <section id="footer">
       <div class="footer-heart">❤️</div>
@@ -2521,6 +2554,125 @@
       if (e.key === 'ArrowLeft') lbNav(-1);
       if (e.key === 'ArrowRight') lbNav(1);
     });
+
+    // ===== LOVE COUPON / SCRATCH CARD =====
+      const loveVouchers = [
+        "Voucher 10 pap kapan aja", "Voucher spam chat manja 1 jam full", "Voucher “good morning & good night” spesial",
+        "Voucher ditemenin sleep call sampai tidur", "Voucher “I love you” unlimited sehari penuh", "Voucher fast response no ngilang",
+        "Voucher cerita/random talk tanpa bilang “cape”", "Voucher kirim VN panjang sebelum tidur", "Voucher panggil sayang seharian full",
+        "Voucher dengerin overthinking tanpa debat", "Voucher bucin mode ON 24 jam", "Voucher ngambek diredain tanpa disuruh",
+        "Voucher ditemenin belajar/kerja via chat", "Voucher pap outfit of the day", "Voucher kirim selfie lucu tanpa nolak",
+        "Voucher “aku kangen kamu” tiap 1 jam", "Voucher jadi clingy seharian", "Voucher reply semua chat pake kata sayang",
+        "Voucher bebas minta dikasih lagu romantis", "Voucher update kegiatan seharian full", "Voucher ketik panjang pas lagi ada masalah",
+        "Voucher “aku bangga sama kamu” kapan aja", "Voucher gombalin kamu sampai salting", "Voucher jadi pacar paling nurut sehari",
+        "Voucher no cuek no dingin sehari full", "Voucher dibikinin playlist khusus kamu", "Voucher pap muka baru bangun",
+        "Voucher dengerin ocehan random tanpa kabur", "Voucher confess hal yang paling disuka dari kamu", "Voucher call 1 jam tanpa multitasking",
+        "Voucher jadi baby mode seharian", "Voucher kirim foto tempat yang ngingetin ke kamu", "Voucher temenin begadang",
+        "Voucher marahnya ditunda demi ngobrol baik-baik", "Voucher kasih reassurance kapan pun dibutuhin", "Voucher “aku ga akan ninggalin kamu” mode on",
+        "Voucher reply pake paragraph bukan 1 kata", "Voucher dibacain cerita atau AU sebelum tidur", "Voucher quality time full tanpa gangguan",
+        "Voucher jadi pacar posesif lucu sehari", "Voucher bebas minta kata-kata romantis kapan aja", "Voucher “aku yang ngalah” sekali pakai",
+        "Voucher kirim recording suara bilang kangen", "Voucher jadi pendengar terbaik tanpa nyela", "Voucher “mode couple paling sweet” aktif 24 jam"
+      ];
+
+      function claimCoupon() {
+        // Buka WA
+        window.open("https://wa.me/6285646186870?text=I%20LOVE%20YOU%20%E2%9D%A4%EF%B8%8F", "_blank");
+
+        // Tampilkan kupon
+        document.getElementById('claim-btn').style.display = 'none';
+        document.getElementById('scratch-area').style.display = 'block';
+        document.getElementById('scratch-hint').style.display = 'block';
+
+        initScratchCard();
+      }
+
+      function initScratchCard() {
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
+        const resultDiv = document.getElementById('voucher-result');
+
+        // Pilih voucher random
+        const randomVoucher = loveVouchers[Math.floor(Math.random() * loveVouchers.length)];
+        resultDiv.innerHTML = `🎟️<br><span style="font-size:1.3rem; margin-top:8px; display:inline-block;">${randomVoucher}</span>`;
+
+        // Setup ukuran canvas
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        // Gambar cover gosokan
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#c084fc');
+        gradient.addColorStop(1, '#ff6b9d');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Tambah teks di atas cover
+        ctx.font = 'bold 22px "DM Sans", sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✨ GOSOK DI SINI ✨', canvas.width / 2, canvas.height / 2);
+
+        canvas.style.cursor = 'crosshair';
+
+        let isDrawing = false;
+        let isRevealed = false;
+
+        function getMousePos(e) {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+          };
+        }
+
+        function scratch(e) {
+          if (!isDrawing || isRevealed) return;
+          e.preventDefault();
+          const pos = getMousePos(e);
+
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2);
+          ctx.fill();
+
+          checkScratch();
+        }
+
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e); });
+        canvas.addEventListener('mousemove', scratch);
+        window.addEventListener('mouseup', () => { isDrawing = false; });
+
+        canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, { passive: false });
+        canvas.addEventListener('touchmove', scratch, { passive: false });
+        window.addEventListener('touchend', () => { isDrawing = false; });
+
+        function checkScratch() {
+          if (isRevealed) return;
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let transparentPixels = 0;
+          const data = imageData.data;
+          for (let i = 3; i < data.length; i += 4) {
+            if (data[i] === 0) transparentPixels++;
+          }
+          const totalPixels = data.length / 4;
+          const percent = (transparentPixels / totalPixels) * 100;
+
+          if (percent > 40) {
+            isRevealed = true;
+            canvas.style.transition = 'opacity 0.5s';
+            canvas.style.opacity = '0';
+            document.getElementById('scratch-hint').textContent = '✨ Jangan lupa screenshot & di-redeem ya! ✨';
+            setTimeout(() => {
+              canvas.style.display = 'none';
+              launchConfetti(4000);
+            }, 500);
+          }
+        }
+      }
   </script>
 
 </body>
