@@ -1039,6 +1039,27 @@
     }
 
     /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+
+      body,
+      button,
+      .flip-card,
+      .jar-svg-wrap,
+      .cake-svg-wrap,
+      .envelope-icon,
+      #music-btn,
+      .lb-btn,
+      #lightbox-close {
+        cursor: auto !important;
+      }
+
+      #cursor-dot,
+      #cursor-ring,
+      .cursor-trail {
+        display: none !important;
+      }
+    }
+
     @media (max-width: 500px) {
       .cards-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1870,6 +1891,7 @@
       const intro = document.getElementById('intro');
       intro.classList.add('fade-out');
       setTimeout(() => { intro.style.display = 'none'; }, 1000);
+      startMusic();
     }
 
     // ===== COUNTDOWN =====
@@ -2135,6 +2157,7 @@
         document.getElementById('intro-password').style.borderColor = 'rgba(255,107,157,0.5)';
         document.getElementById('intro-password').style.boxShadow = 'none';
         initPassword(); // Re-check if password section should be shown
+        stopMusic();
       }, 800);
     }
 
@@ -2163,6 +2186,7 @@
     const trailColors = ['#ff6b9d', '#f4c542', '#c084fc', '#60a5fa'];
 
     document.addEventListener('mousemove', (e) => {
+      if (window.innerWidth <= 768) return;
       mx = e.clientX; my = e.clientY;
       dot.style.left = mx + 'px'; dot.style.top = my + 'px';
       const t = document.createElement('div');
@@ -2174,19 +2198,23 @@
     });
 
     (function animRing() {
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      if (window.innerWidth > 768) {
+        rx += (mx - rx) * 0.12;
+        ry += (my - ry) * 0.12;
+        ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      }
       requestAnimationFrame(animRing);
     })();
 
     document.querySelectorAll('button, .flip-card, .jar-svg-wrap, .cake-svg-wrap').forEach(el => {
       el.addEventListener('mouseenter', () => {
+        if (window.innerWidth <= 768) return;
         ring.style.width = '54px'; ring.style.height = '54px';
         ring.style.borderColor = 'rgba(244,197,66,0.8)';
         dot.style.transform = 'translate(-50%,-50%) scale(1.5)';
       });
       el.addEventListener('mouseleave', () => {
+        if (window.innerWidth <= 768) return;
         ring.style.width = '34px'; ring.style.height = '34px';
         ring.style.borderColor = 'rgba(255,107,157,0.5)';
         dot.style.transform = 'translate(-50%,-50%) scale(1)';
@@ -2196,6 +2224,7 @@
     // ===== SCROLL GLOW PARTICLES =====
     let lastScrollY = window.scrollY;
     window.addEventListener('scroll', () => {
+      if (window.innerWidth <= 768) return;
       const delta = Math.abs(window.scrollY - lastScrollY);
       lastScrollY = window.scrollY;
       if (delta > 5) {
@@ -2212,69 +2241,36 @@
       }
     });
 
-    // ===== HAPPY BIRTHDAY MUSIC (Web Audio API) =====
-    let audioCtx = null;
+    // ===== YOUTUBE BACKGROUND MUSIC =====
     let musicPlaying = false;
-    let musicNodes = [];
-    let musicScheduled = false;
-
-    const HB_NOTES = [
-      // Happy Birthday melody — note frequencies & durations
-      // "Hap-py birth-day to you" x2 then "Hap-py birth-day dear Sha-fa" then "Hap-py birth-day to you"
-      [261.63, 0.25], [261.63, 0.125], [293.66, 0.375], [261.63, 0.375], [349.23, 0.375], [329.63, 0.75],
-      [261.63, 0.25], [261.63, 0.125], [293.66, 0.375], [261.63, 0.375], [392.00, 0.375], [349.23, 0.75],
-      [261.63, 0.25], [261.63, 0.125], [523.25, 0.375], [440.00, 0.375], [349.23, 0.375], [329.63, 0.375], [293.66, 0.75],
-      [466.16, 0.25], [466.16, 0.125], [440.00, 0.375], [349.23, 0.375], [392.00, 0.375], [349.23, 0.75]
-    ];
-
-    function playNote(ctx, freq, startTime, duration, gain) {
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      osc.connect(gainNode); gainNode.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.02);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.9);
-      osc.start(startTime); osc.stop(startTime + duration);
-      musicNodes.push(osc);
-    }
-
-    function scheduleMelody(ctx, startTime, tempo, gain) {
-      let t = startTime;
-      for (const [freq, beats] of HB_NOTES) {
-        const dur = beats * tempo;
-        playNote(ctx, freq, t, dur * 0.85, gain);
-        t += dur;
-      }
-      return t - startTime;
-    }
 
     function startMusic() {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (musicPlaying) return;
       musicPlaying = true;
-      musicScheduled = true;
       document.getElementById('music-btn').classList.add('playing');
       document.getElementById('music-btn').textContent = '🎶';
 
-      const tempo = 0.45;
-      const gain = 0.18;
-
-      function loop(startAt) {
-        if (!musicPlaying) return;
-        const duration = scheduleMelody(audioCtx, startAt, tempo, gain);
-        setTimeout(() => { if (musicPlaying) loop(audioCtx.currentTime + 0.1); }, (duration - 0.5) * 1000);
+      let iframe = document.getElementById('youtube-audio');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'youtube-audio';
+        iframe.style.display = 'none';
+        iframe.setAttribute('allow', 'autoplay');
+        document.body.appendChild(iframe);
       }
-      loop(audioCtx.currentTime + 0.1);
+      // Load YouTube video with autoplay and loop
+      iframe.src = "https://www.youtube.com/embed/lbNuR7jq0AM?autoplay=1&loop=1&playlist=lbNuR7jq0AM&enablejsapi=1";
     }
 
     function stopMusic() {
       musicPlaying = false;
-      musicScheduled = false;
-      if (audioCtx) { audioCtx.close(); audioCtx = null; }
-      musicNodes = [];
       document.getElementById('music-btn').classList.remove('playing');
       document.getElementById('music-btn').textContent = '🎵';
+
+      const iframe = document.getElementById('youtube-audio');
+      if (iframe) {
+        iframe.src = "";
+      }
     }
 
     function toggleMusic() {
