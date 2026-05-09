@@ -2000,9 +2000,6 @@
       }, 4000);
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
     // ===== AGE STATS =====
     const birthDate = new Date('2006-05-10');
     const today = new Date();
@@ -2696,6 +2693,11 @@
           }
         }
       }
+
+      // ===== INIT COUNTDOWN =====
+      // Initialize countdown at the end so all variables (like confettiCanvas) are loaded
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
   </script>
 
 </body>
